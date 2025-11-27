@@ -2,6 +2,7 @@ import React from "react";
 import LeftImg from "./LeftImg";
 import RightFormPanel from "./RightFormPanel";
 import SignUp from "./SignUp";
+import { Outlet } from "react-router-dom";
 
 export default function Login() {
   return (
@@ -14,7 +15,8 @@ export default function Login() {
         
         <LeftImg/>
         {/* <RightFormPanel/> */}
-        <SignUp/>
+        {/* <SignUp/> */}
+        <Outlet/>
         
       </div>
     </div>

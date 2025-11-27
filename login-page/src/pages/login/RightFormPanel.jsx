@@ -6,6 +6,7 @@ import Button from "../../components/Button";
 import SocialLoginButton from "../../components/SocialLoginButton";
 import { FcGoogle } from "react-icons/fc";
 import { FaApple, FaFacebook } from "react-icons/fa";
+import { Link } from "react-router-dom";
 
 export default function RightFormPanel() {
   const socials = [
@@ -74,14 +75,17 @@ export default function RightFormPanel() {
         <span className="text-[#595365] text-[15px]">
           Don't have an account?
         </span>
-        <LinkButton
-          onClick={() => alert("Clicked!")}
+        {/* <LinkButton
+          onClick={() => navigate("/signup")}
           className={
             "flex justify-end underline hover:cursor-pointer mb-2 text-[#6d54b5] text-[15px]"
           }
         >
           Sign Up
-        </LinkButton>
+        </LinkButton> */}
+        <Link to='/signup' className="flex justify-end underline hover:cursor-pointer mb-2 text-[#6d54b5] text-[15px]">
+        Sign Up
+        </Link>
       </div>
     </div>
   );
