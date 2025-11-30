@@ -17,6 +17,26 @@ export default function RightFormPanel() {
     { name: "Apple", icon: FaApple, color: "#000000" },
     { name: "Facebook", icon: FaFacebook, color: "#1877F2" },
   ];
+  const loginForm = [
+    {
+      title: "Email Address",
+      type: "text",
+      placeholder: "Email",
+      value: email ,
+      onChange: (e) => setEmail(e.target.value),
+      className:
+        "mb-2 border border-gray-300 rounded-md p-2 w-full focus:outline-none focus:ring-2 focus:ring-blue-500 text-white",
+    },
+    {
+      title: "Password",
+      type: "password",
+      placeholder: "Password",
+      value: password ,
+      onChange: (e) => setPassword(e.target.value),
+      className:
+        "mb-4 border border-gray-300 rounded-md p-2 w-full focus:outline-none focus:ring-2 focus:ring-blue-500 text-white",
+    },
+  ];
 
   const handleSignIn = async () => {
     console.log("Email:", email);
@@ -46,7 +66,21 @@ export default function RightFormPanel() {
     <div className="w-full md:w-1/2 rounded-2xl aspect-[1.2] flex flex-col pl-10 pr-10">
       <Logo />
       <h2 className="text-white text-xl md:text-2xl mb-4">Welcome Back</h2>
-      <h6 className="text-white">Email Address</h6>
+      {loginForm.map((item, index) => (
+        <div key={index}>
+          <h6 className="text-white">{item.title}</h6>
+          <Input
+            type={item.type}
+            placeholder={item.placeholder}
+            value={item.value}
+            onChange={item.onChange}
+            className={
+              item.className
+            }
+          />
+        </div>
+      ))}
+      {/* <h6 className="text-white">Email Address</h6>
       <Input
         type={"text"}
         placeholder={"Email"}
@@ -55,8 +89,8 @@ export default function RightFormPanel() {
         className={
           "mb-2 border border-gray-300 rounded-md p-2 w-full focus:outline-none focus:ring-2 focus:ring-blue-500 text-white"
         }
-      />
-      <h6 className="text-white">Password</h6>
+      /> */}
+      {/* <h6 className="text-white">Password</h6>
       <Input
         type={"password"}
         placeholder={"Password"}
@@ -65,7 +99,7 @@ export default function RightFormPanel() {
         className={
           "mb-4 border border-gray-300 rounded-md p-2 w-full focus:outline-none focus:ring-2 focus:ring-blue-500 text-white"
         }
-      />
+      /> */}
       <LinkButton
         onClick={() => alert("Clicked!")}
         className={

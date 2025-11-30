@@ -22,6 +22,36 @@ export default function SignUp() {
     { name: "Facebook", icon: FaFacebook, color: "#1877F2" },
   ];
 
+  const signupForm = [
+    {
+      title: "Email Address",
+      type: "text",
+      placeholder: "Email",
+      value: email ,
+      onChange: (e) => setEmail(e.target.value),
+      className:
+        "border border-gray-300 rounded-md p-2 w-full focus:outline-none focus:ring-2 focus:ring-blue-500 text-white",
+    },
+    {
+      title: "Password",
+      type: "password",
+      placeholder: "Password",
+      value: password ,
+      onChange: (e) => setPassword(e.target.value),
+      className:
+        "border border-gray-300 rounded-md p-2 w-full focus:outline-none focus:ring-2 focus:ring-blue-500 text-white",
+    },
+    {
+      title: "Confirm Password",
+      type: "password",
+      placeholder: "Confirm Password",
+      value: confirmPassword ,
+      onChange: (e) => setConfirmPassword(e.target.value),
+      className:
+        "mb-4 border border-gray-300 rounded-md p-2 w-full focus:outline-none focus:ring-2 focus:ring-blue-500 text-white",
+    },
+  ];
+
   const handleSignUp = async () => {
     const formErrors = validation({ email, password, confirmPassword });
 
@@ -97,7 +127,23 @@ export default function SignUp() {
           />
         </div>
       </div>
-      <h6 className="text-white">Email Address</h6>
+      {
+        signupForm.map((item, index)=> (
+          <div key={index}>
+            <h6 className="text-white">{item.title}</h6>
+      <Input
+        type={item.type}
+        placeholder={item.placeholder}
+        value={item.value}
+        onChange={item.onChange}
+        className={
+          item.className
+        }
+      />
+          </div>
+        ))
+      }
+      {/* <h6 className="text-white">Email Address</h6>
       <Input
         type={"text"}
         placeholder={"Email"}
@@ -106,8 +152,8 @@ export default function SignUp() {
         className={
           "border border-gray-300 rounded-md p-2 w-full focus:outline-none focus:ring-2 focus:ring-blue-500 text-white"
         }
-      />
-      <h6 className="text-white">Password</h6>
+      /> */}
+      {/* <h6 className="text-white">Password</h6>
       <Input
         type={"password"}
         placeholder={"Password"}
@@ -116,8 +162,8 @@ export default function SignUp() {
         className={
           "border border-gray-300 rounded-md p-2 w-full focus:outline-none focus:ring-2 focus:ring-blue-500 text-white"
         }
-      />
-      <h6 className="text-white">Confirm Password</h6>
+      /> */}
+      {/* <h6 className="text-white">Confirm Password</h6>
       <Input
         type={"password"}
         placeholder={"Confirm Password"}
@@ -126,7 +172,7 @@ export default function SignUp() {
         className={
           "mb-4 border border-gray-300 rounded-md p-2 w-full focus:outline-none focus:ring-2 focus:ring-blue-500 text-white"
         }
-      />
+      /> */}
 
       <Button
         onClick={handleSignUp}
