@@ -1,4 +1,5 @@
-import React from "react";
+import React, { useState } from "react";
+import axios from "axios";
 import Logo from "../../components/Logo";
 import Input from "../../components/Input";
 import LinkButton from "../../components/LinkButton";
@@ -9,11 +10,38 @@ import { FaApple, FaFacebook } from "react-icons/fa";
 import { Link } from "react-router-dom";
 
 export default function RightFormPanel() {
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
   const socials = [
     { name: "Google", icon: FcGoogle, color: "" },
     { name: "Apple", icon: FaApple, color: "#000000" },
     { name: "Facebook", icon: FaFacebook, color: "#1877F2" },
   ];
+
+  const handleSignIn = async () => {
+    console.log("Email:", email);
+    console.log("Password:", password);
+    try {
+      const res = await axios.post("http://localhost:5000/api/users/login", {
+        email,
+        password,
+      });
+
+      console.log("Login success:", res.data);
+
+      localStorage.setItem("token", res.data.token);
+
+      alert("Login successful!");
+    } catch (err) {
+      if (err.response) {
+        alert(err.response.data.error || "Login failed");
+      } else {
+        alert("Something went wrong");
+      }
+      console.error("Login error:", err);
+    }
+  };
+
   return (
     <div className="w-full md:w-1/2 rounded-2xl aspect-[1.2] flex flex-col pl-10 pr-10">
       <Logo />
@@ -22,6 +50,8 @@ export default function RightFormPanel() {
       <Input
         type={"text"}
         placeholder={"Email"}
+        value={email}
+        onChange={(e) => setEmail(e.target.value)}
         className={
           "mb-2 border border-gray-300 rounded-md p-2 w-full focus:outline-none focus:ring-2 focus:ring-blue-500 text-white"
         }
@@ -30,6 +60,8 @@ export default function RightFormPanel() {
       <Input
         type={"password"}
         placeholder={"Password"}
+        value={password}
+        onChange={(e) => setPassword(e.target.value)}
         className={
           "mb-4 border border-gray-300 rounded-md p-2 w-full focus:outline-none focus:ring-2 focus:ring-blue-500 text-white"
         }
@@ -44,7 +76,7 @@ export default function RightFormPanel() {
       </LinkButton>
 
       <Button
-        onClick={() => console.log("Sign In clicked")}
+        onClick={handleSignIn}
         className="bg-[#6d54b5] text-white px-4 py-2 rounded-lg mb-2 active:animate-pulse cursor-pointer"
       >
         Sign In
@@ -83,8 +115,11 @@ export default function RightFormPanel() {
         >
           Sign Up
         </LinkButton> */}
-        <Link to='/signup' className="flex justify-end underline hover:cursor-pointer mb-2 text-[#6d54b5] text-[15px]">
-        Sign Up
+        <Link
+          to="/signup"
+          className="flex justify-end underline hover:cursor-pointer mb-2 text-[#6d54b5] text-[15px]"
+        >
+          Sign Up
         </Link>
       </div>
     </div>

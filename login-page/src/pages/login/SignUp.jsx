@@ -1,19 +1,53 @@
-import React from "react";
+import React, { useState } from "react";
 import Logo from "../../components/Logo";
 import Input from "../../components/Input";
-import LinkButton from "../../components/LinkButton";
 import Button from "../../components/Button";
 import SocialLoginButton from "../../components/SocialLoginButton";
 import { FcGoogle } from "react-icons/fc";
 import { FaApple, FaFacebook } from "react-icons/fa";
 import { Link } from "react-router-dom";
+import validation from "../../components/Validations";
+import axios from "axios";
 
 export default function SignUp() {
+  const [firstName, setFirstName] = useState("");
+  const [lastName, setLastName] = useState("");
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
+
   const socials = [
     { name: "Google", icon: FcGoogle, color: "" },
     { name: "Apple", icon: FaApple, color: "#000000" },
     { name: "Facebook", icon: FaFacebook, color: "#1877F2" },
   ];
+
+  const handleSignUp = async () => {
+    const formErrors = validation({ email, password, confirmPassword });
+
+    if (Object.keys(formErrors).length > 0) {
+      setErrors(formErrors); 
+      return;
+    }
+    try {
+      const res = await axios.post("http://localhost:5000/api/users/", {
+        firstName,
+        lastName,
+        email,
+        password,
+      });
+
+      console.log("User registered successfully:", res.data);
+    } catch (err) {
+      if (err.response) {
+        alert(err.response.data.error || "User registration failed");
+      } else {
+        alert("Something went wrong");
+      }
+      console.error("User registration error:", err);
+    }
+  };
+
   return (
     <div className="w-full md:w-1/2 rounded-2xl aspect-[1.2] flex flex-col pl-10 pr-10">
       <Logo />
@@ -30,8 +64,11 @@ export default function SignUp() {
         >
           Login
         </LinkButton> */}
-        <Link to="/" className="flex justify-end underline hover:cursor-pointer mb-2 text-[#6d54b5] text-[15px]">
-            Login
+        <Link
+          to="/"
+          className="flex justify-end underline hover:cursor-pointer mb-2 text-[#6d54b5] text-[15px]"
+        >
+          Login
         </Link>
       </div>
       <div className="flex">
@@ -40,16 +77,20 @@ export default function SignUp() {
           <Input
             type={"text"}
             placeholder={"First Name"}
+            value={firstName}
+            onChange={(e) => setFirstName(e.target.value)}
             className={
               "border border-gray-300 rounded-md p-2 w-full focus:outline-none focus:ring-2 focus:ring-blue-500 text-white"
             }
           />
-          </div>
-          <div className="flex-col">
+        </div>
+        <div className="flex-col">
           <h6 className="text-white">Last Name</h6>
           <Input
             type={"text"}
             placeholder={"Last Name"}
+            value={lastName}
+            onChange={(e) => setLastName(e.target.value)}
             className={
               "border border-gray-300 rounded-md p-2 w-full focus:outline-none focus:ring-2 focus:ring-blue-500 text-white"
             }
@@ -60,6 +101,8 @@ export default function SignUp() {
       <Input
         type={"text"}
         placeholder={"Email"}
+        value={email}
+        onChange={(e) => setEmail(e.target.value)}
         className={
           "border border-gray-300 rounded-md p-2 w-full focus:outline-none focus:ring-2 focus:ring-blue-500 text-white"
         }
@@ -68,6 +111,8 @@ export default function SignUp() {
       <Input
         type={"password"}
         placeholder={"Password"}
+        value={password}
+        onChange={(e) => setPassword(e.target.value)}
         className={
           "border border-gray-300 rounded-md p-2 w-full focus:outline-none focus:ring-2 focus:ring-blue-500 text-white"
         }
@@ -76,13 +121,15 @@ export default function SignUp() {
       <Input
         type={"password"}
         placeholder={"Confirm Password"}
+        value={confirmPassword}
+        onChange={(e) => setConfirmPassword(e.target.value)}
         className={
           "mb-4 border border-gray-300 rounded-md p-2 w-full focus:outline-none focus:ring-2 focus:ring-blue-500 text-white"
         }
       />
 
       <Button
-        onClick={() => console.log("Sign In clicked")}
+        onClick={handleSignUp}
         className="bg-[#6d54b5] text-white px-4 py-2 rounded-lg mb-2 active:animate-pulse cursor-pointer"
       >
         Create Account
