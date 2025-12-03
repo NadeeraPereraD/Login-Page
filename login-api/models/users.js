@@ -5,6 +5,10 @@ const userSchema = new mongoose.Schema({
         type: String,
         sparse: true,
     },
+    facebookId: {
+        type: String,
+        sparse: true,
+    },
     firstName : {
         type: String,
         required: true
@@ -12,7 +16,7 @@ const userSchema = new mongoose.Schema({
     lastName : {
         type: String,
         required: function() {
-            return !this.googleId;
+            return !this.googleId && !this.facebookId;
         },
         default: '',
     },
@@ -24,7 +28,7 @@ const userSchema = new mongoose.Schema({
     password : {
         type: String,
         required: function() {
-            return !this.googleId;
+            return !this.googleId && !this.facebookId;
         },
     },
 }, {

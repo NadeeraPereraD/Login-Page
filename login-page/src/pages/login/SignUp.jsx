@@ -32,13 +32,13 @@ export default function SignUp() {
       name: "Apple",
       icon: FaApple,
       color: "#000000",
-      onClick: () => console.log("Apple Clicked"),
+      onClick: () => console.log('Apple clicked'),
     },
     {
       name: "Facebook",
       icon: FaFacebook,
       color: "#1877F2",
-      onClick: () => console.log("FB Clicked"),
+      onClick: () => handleFacebookLogin(),
     },
   ];
 
@@ -92,6 +92,50 @@ export default function SignUp() {
     },
     onError: () => console.log("Google Sign In Failed"),
   });
+
+  const handleFacebookLogin = () => {
+    const appId = import.meta.env.VITE_FACEBOOK_APP_ID;
+    const redirectUri = "http://localhost:5173"; 
+
+    const fbAuthUrl = `https://www.facebook.com/v17.0/dialog/oauth?client_id=${appId}&redirect_uri=${redirectUri}&scope=email,public_profile&response_type=token`;
+
+    const width = 600, height = 600;
+    const left = window.innerWidth / 2 - width / 2;
+    const top = window.innerHeight / 2 - height / 2;
+
+    const fbWindow = window.open(
+      fbAuthUrl,
+      "Facebook Login",
+      `width=${width},height=${height},top=${top},left=${left}`
+    );
+
+    const fbCheck = setInterval(() => {
+      try {
+        if (!fbWindow || fbWindow.closed) {
+          clearInterval(fbCheck);
+          console.log("FB window closed");
+        } else if (fbWindow.location.href.includes(redirectUri)) {
+          const params = new URL(fbWindow.location.href).hash
+            .substring(1)
+            .split("&")
+            .reduce((acc, cur) => {
+              const [k, v] = cur.split("=");
+              acc[k] = v;
+              return acc;
+            }, {});
+
+          const accessToken = params.access_token;
+          fbWindow.close();
+          clearInterval(fbCheck);
+
+          // Send accessToken to backend
+          axios.post("http://localhost:5000/api/users/facebookSignup", { accessToken })
+            .then(res => console.log("FB user registered:", res.data))
+            .catch(err => console.error("FB signup failed:", err));
+        }
+      } catch (err) {}
+    }, 500);
+  };
 
   const handleSignUp = async () => {
     const formErrors = validation({ email, password, confirmPassword });

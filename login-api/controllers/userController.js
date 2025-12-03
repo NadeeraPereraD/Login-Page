@@ -87,62 +87,6 @@ export const loginUser = async (req, res) => {
   }
 };
 
-// export const googleSignup = async (req, res) => {
-//   try {
-//     const { googleIdToken } = req.body;
-
-//     // 1. Verify the Google ID token
-//     const ticket = await client.verifyIdToken({
-//       idToken: googleIdToken,
-//       audience: process.env.GOOGLE_CLIENT_ID,
-//     });
-
-//     const payload = ticket.getPayload();
-//     const { sub: googleId, email, given_name: firstName, family_name: lastName, email_verified } = payload;
-
-//     if (!email_verified) {
-//       return res.status(400).json({ error: "Google email not verified" });
-//     }
-
-//     // 2. Check if user already exists
-//     let user = await User.findOne({ email });
-
-//     if (!user) {
-//       // 3. Create a new user if not exists
-//       user = new User({
-//         googleId,
-//         firstName,
-//         lastName,
-//         email,
-//         password: null, // because signup via Google
-//       });
-//       await user.save();
-//     }
-
-//     // 4. Generate JWT
-//     const token = jwt.sign(
-//       { id: user._id, email: user.email },
-//       process.env.JWT_SECRET,
-//       { expiresIn: "1h" } // token valid for 7 days
-//     );
-
-//     // 5. Send back to frontend
-//     res.status(200).json({
-//       msg: "Google signup success",
-//       user: {
-//         id: user._id,
-//         firstName: user.firstName,
-//         lastName: user.lastName,
-//         email: user.email,
-//       },
-//       token,
-//     });
-//   } catch (err) {
-//     console.error("Google signup error:", err);
-//     res.status(400).json({ error: "Invalid Google token" });
-//   }
-// };
-
 export const googleSignup = async (req, res) => {
   console.log("Google signup route hit!");
   console.log(process.env.GOOGLE_REDIRECT_URI);
@@ -203,6 +147,61 @@ export const googleSignup = async (req, res) => {
   } catch (err) {
     console.error("Google signup error:", err.response?.data || err.message);
     res.status(400).json({ error: "Invalid Google token" });
+  }
+};
+
+export const facebookSignup = async (req, res) => {
+  console.log("Facebook signup route hit!");
+  try {
+    const { accessToken} = req.body;
+
+  if(!accessToken) {
+    return res.status(400).json({error: "Access token is required"});
+  }
+
+    // Fetch user info from Facebook using /me endpoint (no userID needed)
+    const fbRes = await axios.get(
+      `https://graph.facebook.com/v17.0/me?fields=id,first_name,last_name,email&access_token=${accessToken}`
+    );
+
+    const { id: facebookId, email, first_name: firstName, last_name: lastName } = fbRes.data;
+
+    console.log("Facebook user data:", fbRes.data);
+
+    if (!email) {
+      return res.status(400).json({ error: "Facebook email not available" });
+    }
+
+    // Check if user exists
+    let user = await User.findOne({ email });
+    if (!user) {
+      user = new User({ facebookId, firstName, lastName: lastName || '', email });
+      await user.save();
+      console.log("New Facebook user created");
+    }else {
+      console.log("Existing user found, logging in");
+      if(!user.facebookId){
+        user.facebookId = facebookId;
+        await user.save();
+      }
+    }
+
+    // Generate JWT
+    const token = jwt.sign({ id: user._id, email: user.email }, process.env.JWT_SECRET, { expiresIn: "1h" });
+
+    res.status(200).json({
+      msg: "Facebook signup success",
+      user: {
+        id: user._id,
+        firstName: user.firstName,
+        lastName: user.lastName,
+        email: user.email,
+      },
+      token,
+    });
+  } catch (err) {
+    console.error("Facebook signup error:", err.response?.data || err.message);
+    res.status(400).json({ error: "Invalid Facebook token or authentication failed", details: err.response?.data || err.message });
   }
 };
 
