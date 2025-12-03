@@ -8,8 +8,13 @@ import { FaApple, FaFacebook } from "react-icons/fa";
 import { Link } from "react-router-dom";
 import validation from "../../components/Validations";
 import axios from "axios";
+//import * as jwtDecodeModule from "jwt-decode";
+// import { jwtDecode } from "jwt-decode";
+import { useGoogleLogin } from "@react-oauth/google";
+// import { GoogleLogin } from "@react-oauth/google";
 
 export default function SignUp() {
+  //const jwt_decode = jwtDecodeModule.default;
   const [firstName, setFirstName] = useState("");
   const [lastName, setLastName] = useState("");
   const [email, setEmail] = useState("");
@@ -17,9 +22,24 @@ export default function SignUp() {
   const [confirmPassword, setConfirmPassword] = useState("");
 
   const socials = [
-    { name: "Google", icon: FcGoogle, color: "" },
-    { name: "Apple", icon: FaApple, color: "#000000" },
-    { name: "Facebook", icon: FaFacebook, color: "#1877F2" },
+    {
+      name: "Google",
+      icon: FcGoogle,
+      color: "",
+      onClick: () => handleGoogleLogin(),
+    },
+    {
+      name: "Apple",
+      icon: FaApple,
+      color: "#000000",
+      onClick: () => console.log("Apple Clicked"),
+    },
+    {
+      name: "Facebook",
+      icon: FaFacebook,
+      color: "#1877F2",
+      onClick: () => console.log("FB Clicked"),
+    },
   ];
 
   const signupForm = [
@@ -27,7 +47,7 @@ export default function SignUp() {
       title: "Email Address",
       type: "text",
       placeholder: "Email",
-      value: email ,
+      value: email,
       onChange: (e) => setEmail(e.target.value),
       className:
         "border border-gray-300 rounded-md p-2 w-full focus:outline-none focus:ring-2 focus:ring-blue-500 text-white",
@@ -36,7 +56,7 @@ export default function SignUp() {
       title: "Password",
       type: "password",
       placeholder: "Password",
-      value: password ,
+      value: password,
       onChange: (e) => setPassword(e.target.value),
       className:
         "border border-gray-300 rounded-md p-2 w-full focus:outline-none focus:ring-2 focus:ring-blue-500 text-white",
@@ -45,18 +65,39 @@ export default function SignUp() {
       title: "Confirm Password",
       type: "password",
       placeholder: "Confirm Password",
-      value: confirmPassword ,
+      value: confirmPassword,
       onChange: (e) => setConfirmPassword(e.target.value),
       className:
         "mb-4 border border-gray-300 rounded-md p-2 w-full focus:outline-none focus:ring-2 focus:ring-blue-500 text-white",
     },
   ];
 
+  const handleGoogleLogin = useGoogleLogin({
+    flow: "auth-code",
+    onSuccess: async (tokenResponse) => {
+      console.log(tokenResponse)
+      try {
+        const authCode = tokenResponse.code;
+        console.log(authCode);
+        const res = await axios.post(
+          "http://localhost:5000/api/users/googleSignup",
+          {
+            authCode
+          }
+        ); 
+        console.log("Google user registered:", res.data);
+      } catch (err) {
+        console.error("Google signup failed:", err);
+      }
+    },
+    onError: () => console.log("Google Sign In Failed"),
+  });
+
   const handleSignUp = async () => {
     const formErrors = validation({ email, password, confirmPassword });
 
     if (Object.keys(formErrors).length > 0) {
-      setErrors(formErrors); 
+      setErrors(formErrors);
       return;
     }
     try {
@@ -86,14 +127,6 @@ export default function SignUp() {
         <span className="text-[#595365] text-[15px]">
           Already have an account?
         </span>
-        {/* <LinkButton
-          onClick={() => navigate("/")}
-          className={
-            "flex justify-end underline hover:cursor-pointer mb-2 text-[#6d54b5] text-[15px]"
-          }
-        >
-          Login
-        </LinkButton> */}
         <Link
           to="/"
           className="flex justify-end underline hover:cursor-pointer mb-2 text-[#6d54b5] text-[15px]"
@@ -127,52 +160,18 @@ export default function SignUp() {
           />
         </div>
       </div>
-      {
-        signupForm.map((item, index)=> (
-          <div key={index}>
-            <h6 className="text-white">{item.title}</h6>
-      <Input
-        type={item.type}
-        placeholder={item.placeholder}
-        value={item.value}
-        onChange={item.onChange}
-        className={
-          item.className
-        }
-      />
-          </div>
-        ))
-      }
-      {/* <h6 className="text-white">Email Address</h6>
-      <Input
-        type={"text"}
-        placeholder={"Email"}
-        value={email}
-        onChange={(e) => setEmail(e.target.value)}
-        className={
-          "border border-gray-300 rounded-md p-2 w-full focus:outline-none focus:ring-2 focus:ring-blue-500 text-white"
-        }
-      /> */}
-      {/* <h6 className="text-white">Password</h6>
-      <Input
-        type={"password"}
-        placeholder={"Password"}
-        value={password}
-        onChange={(e) => setPassword(e.target.value)}
-        className={
-          "border border-gray-300 rounded-md p-2 w-full focus:outline-none focus:ring-2 focus:ring-blue-500 text-white"
-        }
-      /> */}
-      {/* <h6 className="text-white">Confirm Password</h6>
-      <Input
-        type={"password"}
-        placeholder={"Confirm Password"}
-        value={confirmPassword}
-        onChange={(e) => setConfirmPassword(e.target.value)}
-        className={
-          "mb-4 border border-gray-300 rounded-md p-2 w-full focus:outline-none focus:ring-2 focus:ring-blue-500 text-white"
-        }
-      /> */}
+      {signupForm.map((item, index) => (
+        <div key={index}>
+          <h6 className="text-white">{item.title}</h6>
+          <Input
+            type={item.type}
+            placeholder={item.placeholder}
+            value={item.value}
+            onChange={item.onChange}
+            className={item.className}
+          />
+        </div>
+      ))}
 
       <Button
         onClick={handleSignUp}
@@ -188,16 +187,12 @@ export default function SignUp() {
       </div>
 
       <div className="flex items-center justify-around gap-4 mt-4">
-        {socials.map((item) => (
-          <SocialLoginButton
-            key={item.name}
+        {socials.map((item, index) => (
+          <SocialLoginButton key={index}
             socialMedia={item.icon}
             color={item.color}
-            onClick={() => console.log(item.name + " Clicked")}
-            className="flex items-center justify-center
-                                w-12 h-12 rounded-full border border-gray-300
-                                hover:bg-gray-100 active:scale-95 transition-all duration-150
-                                cursor-pointer"
+            onClick={item.onClick}
+            className="flex items-center justify-center w-12 h-12 rounded-full border border-gray-300 hover:bg-gray-100 active:scale-95 transition-all duration-150 cursor-pointer"
           />
         ))}
       </div>
