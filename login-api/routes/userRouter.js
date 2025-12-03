@@ -1,5 +1,5 @@
 import express from "express";
-import { registerUser, loginUser, googleSignup, facebookSignup } from "../controllers/userController.js";
+import { registerUser, loginUser, googleAuth, facebookAuth } from "../controllers/userController.js";
 
 const userRouter = express.Router();
 
@@ -7,8 +7,8 @@ userRouter.post("/", registerUser);
 
 userRouter.post("/login", loginUser);
 
-userRouter.post("/googleSignup", googleSignup);
+userRouter.post("/google", googleAuth);
 
-userRouter.post("/facebookSignup", facebookSignup);
+userRouter.post("/facebook", facebookAuth);
 
 export default userRouter;

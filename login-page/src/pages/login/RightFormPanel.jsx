@@ -8,21 +8,27 @@ import SocialLoginButton from "../../components/SocialLoginButton";
 import { FcGoogle } from "react-icons/fc";
 import { FaApple, FaFacebook } from "react-icons/fa";
 import { Link } from "react-router-dom";
+import {
+  useGoogleAuth,
+  handleFacebookLogin,
+} from "../../components/AuthLogin.js";
 
 export default function RightFormPanel() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const handleGoogleLogin = useGoogleAuth();
+
   const socials = [
-    { name: "Google", icon: FcGoogle, color: "" },
-    { name: "Apple", icon: FaApple, color: "#000000" },
-    { name: "Facebook", icon: FaFacebook, color: "#1877F2" },
+    { name: "Google", icon: FcGoogle, color: "", onClick: handleGoogleLogin, },
+    { name: "Apple", icon: FaApple, color: "#000000", onClick: () => console.log("Apple clicked"), },
+    { name: "Facebook", icon: FaFacebook, color: "#1877F2", onClick: () => handleFacebookLogin(), },
   ];
   const loginForm = [
     {
       title: "Email Address",
       type: "text",
       placeholder: "Email",
-      value: email ,
+      value: email,
       onChange: (e) => setEmail(e.target.value),
       className:
         "mb-2 border border-gray-300 rounded-md p-2 w-full focus:outline-none focus:ring-2 focus:ring-blue-500 text-white",
@@ -31,7 +37,7 @@ export default function RightFormPanel() {
       title: "Password",
       type: "password",
       placeholder: "Password",
-      value: password ,
+      value: password,
       onChange: (e) => setPassword(e.target.value),
       className:
         "mb-4 border border-gray-300 rounded-md p-2 w-full focus:outline-none focus:ring-2 focus:ring-blue-500 text-white",
@@ -74,9 +80,7 @@ export default function RightFormPanel() {
             placeholder={item.placeholder}
             value={item.value}
             onChange={item.onChange}
-            className={
-              item.className
-            }
+            className={item.className}
           />
         </div>
       ))}
@@ -128,7 +132,7 @@ export default function RightFormPanel() {
             key={item.name}
             socialMedia={item.icon}
             color={item.color}
-            onClick={() => console.log(item.name + " Clicked")}
+            onClick={item.onClick}
             className="flex items-center justify-center
                             w-12 h-12 rounded-full border border-gray-300
                             hover:bg-gray-100 active:scale-95 transition-all duration-150

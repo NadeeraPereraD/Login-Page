@@ -2,7 +2,7 @@ import User from "../models/users.js";
 import dotenv from "dotenv";
 import bcrypt from "bcrypt";
 import jwt from "jsonwebtoken";
-import {OAuth2Client} from "google-auth-library";
+import { OAuth2Client } from "google-auth-library";
 import axios from "axios";
 
 const client = new OAuth2Client(process.env.GOOGLE_CLIENT_ID);
@@ -31,18 +31,17 @@ export async function registerUser(req, res) {
         firstName: newUser.firstName,
         lastName: newUser.lastName,
         email: newUser.email,
-        id: newUser._id, 
+        id: newUser._id,
       },
       process.env.JWT_SECRET,
-      { expiresIn: "1h" } 
+      { expiresIn: "1h" }
     );
 
     res.json({
       message: "User registered successfully",
       token,
       user,
-    }); 
-    
+    });
   } catch (error) {
     console.error("User registration error:", error);
     res.status(500).json({ error: "User registration failed" });
@@ -62,7 +61,9 @@ export const loginUser = async (req, res) => {
     const isPasswordCorrect = bcrypt.compareSync(data.password, user.password);
 
     if (!isPasswordCorrect) {
-      return res.status(401).json({ error: "Login failed: Incorrect password" });
+      return res
+        .status(401)
+        .json({ error: "Login failed: Incorrect password" });
     }
 
     const token = jwt.sign(
@@ -70,10 +71,10 @@ export const loginUser = async (req, res) => {
         firstName: user.firstName,
         lastName: user.lastName,
         email: user.email,
-        id: user._id, 
+        id: user._id,
       },
       process.env.JWT_SECRET,
-      { expiresIn: "1h" } 
+      { expiresIn: "1h" }
     );
 
     res.json({
@@ -87,9 +88,8 @@ export const loginUser = async (req, res) => {
   }
 };
 
-export const googleSignup = async (req, res) => {
-  console.log("Google signup route hit!");
-  console.log(process.env.GOOGLE_REDIRECT_URI);
+export const googleAuth = async (req, res) => {
+  console.log("Google auth route hit!");
   try {
     const { authCode } = req.body;
 
@@ -117,7 +117,13 @@ export const googleSignup = async (req, res) => {
     });
 
     const payload = ticket.getPayload();
-    const { sub: googleId, email, given_name: firstName, family_name: lastName, email_verified } = payload;
+    const {
+      sub: googleId,
+      email,
+      given_name: firstName,
+      family_name: lastName,
+      email_verified,
+    } = payload;
 
     if (!email_verified) {
       return res.status(400).json({ error: "Google email not verified" });
@@ -125,17 +131,32 @@ export const googleSignup = async (req, res) => {
 
     //Check if user exists
     let user = await User.findOne({ email });
+    let isNewUser = false;
+
     if (!user) {
-      user = new User({ googleId, firstName, lastName: lastName || '', email,});
+      user = new User({ googleId, firstName, lastName: lastName || "", email });
       await user.save();
+      isNewUser = true;
+      console.log("New google user created");
+    }else {
+      console.log("Existing user logging in");
+      if(!user.googleId){
+        user.googleId = googleId;
+        await user.save();
+      }
     }
 
     //Generate your JWT
-    const token = jwt.sign({ id: user._id, email: user.email }, process.env.JWT_SECRET, { expiresIn: "1h" });
+    const token = jwt.sign(
+      { id: user._id, email: user.email },
+      process.env.JWT_SECRET,
+      { expiresIn: "1h" }
+    );
 
     //Send response
     res.status(200).json({
-      msg: "Google signup success",
+      msg: isNewUser ? "Google signup success" : "Google login success",
+      isNewUser,
       user: {
         id: user._id,
         firstName: user.firstName,
@@ -145,26 +166,31 @@ export const googleSignup = async (req, res) => {
       token,
     });
   } catch (err) {
-    console.error("Google signup error:", err.response?.data || err.message);
+    console.error("Google auth error:", err.response?.data || err.message);
     res.status(400).json({ error: "Invalid Google token" });
   }
 };
 
-export const facebookSignup = async (req, res) => {
+export const facebookAuth = async (req, res) => {
   console.log("Facebook signup route hit!");
   try {
-    const { accessToken} = req.body;
+    const { accessToken } = req.body;
 
-  if(!accessToken) {
-    return res.status(400).json({error: "Access token is required"});
-  }
+    if (!accessToken) {
+      return res.status(400).json({ error: "Access token is required" });
+    }
 
     // Fetch user info from Facebook using /me endpoint (no userID needed)
     const fbRes = await axios.get(
       `https://graph.facebook.com/v17.0/me?fields=id,first_name,last_name,email&access_token=${accessToken}`
     );
 
-    const { id: facebookId, email, first_name: firstName, last_name: lastName } = fbRes.data;
+    const {
+      id: facebookId,
+      email,
+      first_name: firstName,
+      last_name: lastName,
+    } = fbRes.data;
 
     console.log("Facebook user data:", fbRes.data);
 
@@ -174,23 +200,35 @@ export const facebookSignup = async (req, res) => {
 
     // Check if user exists
     let user = await User.findOne({ email });
+    let isNewUser = false;
+
     if (!user) {
-      user = new User({ facebookId, firstName, lastName: lastName || '', email });
+      user = new User({
+        facebookId,
+        firstName,
+        lastName: lastName || '',
+        email,
+      });
       await user.save();
+      isNewUser = true;
       console.log("New Facebook user created");
-    }else {
-      console.log("Existing user found, logging in");
-      if(!user.facebookId){
+    } else {
+      console.log("Existing user logging in");
+      if (!user.facebookId) {
         user.facebookId = facebookId;
         await user.save();
       }
     }
 
     // Generate JWT
-    const token = jwt.sign({ id: user._id, email: user.email }, process.env.JWT_SECRET, { expiresIn: "1h" });
+    const token = jwt.sign(
+      { id: user._id, email: user.email },
+      process.env.JWT_SECRET,
+      { expiresIn: "1h" }
+    );
 
     res.status(200).json({
-      msg: "Facebook signup success",
+      msg: isNewUser ? "Facebook signup success" : "Facebook login success",
       user: {
         id: user._id,
         firstName: user.firstName,
@@ -200,8 +238,12 @@ export const facebookSignup = async (req, res) => {
       token,
     });
   } catch (err) {
-    console.error("Facebook signup error:", err.response?.data || err.message);
-    res.status(400).json({ error: "Invalid Facebook token or authentication failed", details: err.response?.data || err.message });
+    console.error("Facebook auth error:", err.response?.data || err.message);
+    res
+      .status(400)
+      .json({
+        error: "Invalid Facebook token or authentication failed",
+        details: err.response?.data || err.message,
+      });
   }
 };
-
