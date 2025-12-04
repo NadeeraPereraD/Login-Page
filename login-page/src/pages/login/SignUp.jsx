@@ -8,19 +8,22 @@ import { FaApple, FaFacebook } from "react-icons/fa";
 import { Link } from "react-router-dom";
 import validation from "../../components/Validations";
 import axios from "axios";
-//import * as jwtDecodeModule from "jwt-decode";
-// import { jwtDecode } from "jwt-decode";
-import { useGoogleLogin } from "@react-oauth/google";
-// import { GoogleLogin } from "@react-oauth/google";
 import { useGoogleAuth, handleFacebookLogin } from "../../components/AuthLogin.js";
+import authService from "../../services/authService.js";
 
 export default function SignUp() {
   //const jwt_decode = jwtDecodeModule.default;
-  const [firstName, setFirstName] = useState("");
-  const [lastName, setLastName] = useState("");
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
+  // const [firstName, setFirstName] = useState("");
+  // const [lastName, setLastName] = useState("");
+  // const [email, setEmail] = useState("");
+  // const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
+  const [formData, setFormData] = useState({
+    firstName: '',
+    lastName: '',
+    email: '',
+    password: '',
+  });
   const handleGoogleLogin = useGoogleAuth();
 
   const socials = [
@@ -30,12 +33,12 @@ export default function SignUp() {
       color: "",
       onClick: handleGoogleLogin,
     },
-    {
-      name: "Apple",
-      icon: FaApple,
-      color: "#000000",
-      onClick: () => console.log("Apple clicked"),
-    },
+    // {
+    //   name: "Apple",
+    //   icon: FaApple,
+    //   color: "#000000",
+    //   onClick: () => console.log("Apple clicked"),
+    // },
     {
       name: "Facebook",
       icon: FaFacebook,
@@ -49,8 +52,8 @@ export default function SignUp() {
       title: "Email Address",
       type: "text",
       placeholder: "Email",
-      value: email,
-      onChange: (e) => setEmail(e.target.value),
+      value: formData.email,
+      onChange: (e) => setFormData({ ...formData, email: e.target.value }),
       className:
         "border border-gray-300 rounded-md p-2 w-full focus:outline-none focus:ring-2 focus:ring-blue-500 text-white",
     },
@@ -58,8 +61,8 @@ export default function SignUp() {
       title: "Password",
       type: "password",
       placeholder: "Password",
-      value: password,
-      onChange: (e) => setPassword(e.target.value),
+      value: formData.password,
+      onChange: (e) => setFormData({ ...formData, password: e.target.value }),
       className:
         "border border-gray-300 rounded-md p-2 w-full focus:outline-none focus:ring-2 focus:ring-blue-500 text-white",
     },
@@ -75,26 +78,24 @@ export default function SignUp() {
   ];
 
   const handleSignUp = async () => {
-    const formErrors = validation({ email, password, confirmPassword });
+    const formErrors = validation({ 
+      email: formData.email, 
+      password: formData.password, 
+      confirmPassword 
+    });
 
     if (Object.keys(formErrors).length > 0) {
       setErrors(formErrors);
       return;
     }
     try {
-      const res = await axios.post("http://localhost:5000/api/users/", {
-        firstName,
-        lastName,
-        email,
-        password,
-      });
-
-      console.log("User registered successfully:", res.data);
+      const data = await authService.register(formData);
+      console.log("User registered successfully:", data);
     } catch (err) {
       if (err.response) {
         alert(err.response.data.error || "User registration failed");
       } else {
-        alert("Something went wrong");
+        alert(err.response?.data?.error || 'Registration failed. Please try again.');
       }
       console.error("User registration error:", err);
     }
@@ -121,8 +122,8 @@ export default function SignUp() {
           <Input
             type={"text"}
             placeholder={"First Name"}
-            value={firstName}
-            onChange={(e) => setFirstName(e.target.value)}
+            value={formData.firstName}
+            onChange={(e) => setFormData({ ...formData, firstName: e.target.value })}
             className={
               "border border-gray-300 rounded-md p-2 w-full focus:outline-none focus:ring-2 focus:ring-blue-500 text-white"
             }
@@ -133,8 +134,8 @@ export default function SignUp() {
           <Input
             type={"text"}
             placeholder={"Last Name"}
-            value={lastName}
-            onChange={(e) => setLastName(e.target.value)}
+            value={formData.lastName}
+            onChange={(e) => setFormData({ ...formData, lastName: e.target.value })}
             className={
               "border border-gray-300 rounded-md p-2 w-full focus:outline-none focus:ring-2 focus:ring-blue-500 text-white"
             }

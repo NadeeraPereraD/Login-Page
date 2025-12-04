@@ -12,15 +12,18 @@ import {
   useGoogleAuth,
   handleFacebookLogin,
 } from "../../components/AuthLogin.js";
+import authService from "../../services/authService.js";
 
 export default function RightFormPanel() {
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
+  const [formData, setFormData] = useState({
+    email: '',
+    password: '',
+  });
   const handleGoogleLogin = useGoogleAuth();
 
   const socials = [
     { name: "Google", icon: FcGoogle, color: "", onClick: handleGoogleLogin, },
-    { name: "Apple", icon: FaApple, color: "#000000", onClick: () => console.log("Apple clicked"), },
+    // { name: "Apple", icon: FaApple, color: "#000000", onClick: () => console.log("Apple clicked"), },
     { name: "Facebook", icon: FaFacebook, color: "#1877F2", onClick: () => handleFacebookLogin(), },
   ];
   const loginForm = [
@@ -28,8 +31,8 @@ export default function RightFormPanel() {
       title: "Email Address",
       type: "text",
       placeholder: "Email",
-      value: email,
-      onChange: (e) => setEmail(e.target.value),
+      value: formData.email,
+      onChange: (e) => setFormData({ ...formData, email: e.target.value }),
       className:
         "mb-2 border border-gray-300 rounded-md p-2 w-full focus:outline-none focus:ring-2 focus:ring-blue-500 text-white",
     },
@@ -37,30 +40,28 @@ export default function RightFormPanel() {
       title: "Password",
       type: "password",
       placeholder: "Password",
-      value: password,
-      onChange: (e) => setPassword(e.target.value),
+      value: formData.password,
+      onChange: (e) => setFormData({ ...formData, password: e.target.value }),
       className:
         "mb-4 border border-gray-300 rounded-md p-2 w-full focus:outline-none focus:ring-2 focus:ring-blue-500 text-white",
     },
   ];
 
   const handleSignIn = async () => {
-    console.log("Email:", email);
-    console.log("Password:", password);
+    console.log("Email:", formData.email);
+    console.log("Password:", formData.password);
     try {
-      const res = await axios.post("http://localhost:5000/api/users/login", {
-        email,
-        password,
-      });
+      const data = authService.login(formData);
 
-      console.log("Login success:", res.data);
+      console.log("Login success:", data);
 
-      localStorage.setItem("token", res.data.token);
+      localStorage.setItem("token", data.token);
+      localStorage.setItem("user", JSON.stringify(data.user));
 
       alert("Login successful!");
     } catch (err) {
       if (err.response) {
-        alert(err.response.data.error || "Login failed");
+        alert(err.response?.data?.error || 'Login failed. Please try again.');
       } else {
         alert("Something went wrong");
       }

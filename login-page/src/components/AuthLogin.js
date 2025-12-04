@@ -1,5 +1,6 @@
 import axios from "axios";
 import { useGoogleLogin } from "@react-oauth/google";
+import authService from '../services/authService.js'
 
 export const useGoogleAuth = () => {
   console.log('Google Signup hit');
@@ -8,20 +9,21 @@ export const useGoogleAuth = () => {
     onSuccess: async (tokenResponse) => {
       try {
         const authCode = tokenResponse.code;
-        const res = await axios.post("http://localhost:5000/api/users/google", {
-          authCode,
-        });
-        console.log(res.data.msg);
+        // const res = await axios.post("http://localhost:5000/api/users/google", {
+        //   authCode,
+        // });
+        const data = await authService.googleAuth(authCode);
+        console.log(data.msg);
 
-        localStorage.setItem("token", res.data.token);
-        localStorage.setItem("user", JSON.stringify(res.data.user));
+        localStorage.setItem("token", data.token);
+        localStorage.setItem("user", JSON.stringify(data.user));
 
-        if (res.data.isNewUser) {
+        if (data.isNewUser) {
           alert(
-            `Welcome ${res.data.user.firstName}! Account created successfully.`
+            `Welcome ${data.user.firstName}! Account created successfully.`
           );
         } else {
-          alert(`Welcome back ${res.data.user.firstName}!`);
+          alert(`Welcome back ${data.user.firstName}!`);
         }
       } catch (err) {
         console.error("Google auth failed:", err);
@@ -39,7 +41,7 @@ export const useGoogleAuth = () => {
 
 export const handleFacebookLogin = () => {
   const appId = import.meta.env.VITE_FACEBOOK_APP_ID;
-  const redirectUri = "http://localhost:5173";
+  const redirectUri = import.meta.env.VITE_REDIRECT_URI;
 
   const fbAuthUrl = `https://www.facebook.com/v17.0/dialog/oauth?client_id=${appId}&redirect_uri=${redirectUri}&scope=email,public_profile&response_type=token`;
 
@@ -83,20 +85,17 @@ export const handleFacebookLogin = () => {
         clearInterval(fbCheck);
 
         // Send accessToken to backend
-        axios
-          .post("http://localhost:5000/api/users/facebook", {
-            accessToken,
-          })
-          .then((res) => {
-            console.log(res.data.msg);
-            localStorage.setItem("token", res.data.token);
-            localStorage.setItem("user", JSON.stringify(res.data.user));
-            if (res.data.isNewUser) {
+        authService.facebookAuth(accessToken)
+          .then((data) => {
+            console.log(data.msg);
+            localStorage.setItem("token", data.token);
+            localStorage.setItem("user", JSON.stringify(data.user));
+            if (data.isNewUser) {
               alert(
-                `Welcome ${res.data.user.firstName}! Account created successfully.`
+                `Welcome ${data.user.firstName}! Account created successfully.`
               );
             } else {
-              alert(`Welcome back ${res.data.user.firstName}!`);
+              alert(`Welcome back ${data.user.firstName}!`);
             }
           })
           .catch((err) => {
