@@ -1,14 +1,14 @@
 import React, { useState } from "react";
-import Logo from "../../components/Logo";
-import Input from "../../components/Input";
-import Button from "../../components/Button";
-import SocialLoginButton from "../../components/SocialLoginButton";
+import Logo from "../../components/common/Logo";
+import Input from "../../components/common/Input";
+import Button from "../../components/common/Button";
+import SocialLoginButton from "../../components/login/SocialLoginButton";
 import { FcGoogle } from "react-icons/fc";
 import { FaApple, FaFacebook } from "react-icons/fa";
 import { Link } from "react-router-dom";
-import validation from "../../components/Validations";
+import validation from "../../components/login/Validations";
 import axios from "axios";
-import { useGoogleAuth, handleFacebookLogin } from "../../components/AuthLogin.js";
+import { useGoogleAuth, handleFacebookLogin } from "../../components/login/AuthLogin.js";
 import authService from "../../services/authService.js";
 
 export default function SignUp() {

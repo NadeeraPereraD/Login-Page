@@ -1,5 +1,5 @@
 import React from "react";
-import LoginImg from "../../components/LoginImg";
+import LoginImg from "../../components/login/LoginImg";
 import image from "../../assets/backgroundImg2.jpg";
 
 export default function LeftImg() {

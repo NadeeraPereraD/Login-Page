@@ -1,17 +1,17 @@
 import React, { useState } from "react";
 import axios from "axios";
-import Logo from "../../components/Logo";
-import Input from "../../components/Input";
-import LinkButton from "../../components/LinkButton";
-import Button from "../../components/Button";
-import SocialLoginButton from "../../components/SocialLoginButton";
+import Logo from "../../components/common/Logo.jsx";
+import Input from "../../components/common/Input";
+import LinkButton from "../../components/common/LinkButton";
+import Button from "../../components/common/Button";
+import SocialLoginButton from "../../components/login/SocialLoginButton.jsx";
 import { FcGoogle } from "react-icons/fc";
 import { FaApple, FaFacebook } from "react-icons/fa";
 import { Link } from "react-router-dom";
 import {
   useGoogleAuth,
   handleFacebookLogin,
-} from "../../components/AuthLogin.js";
+} from "../../components/login/AuthLogin.js";
 import authService from "../../services/authService.js";
 
 export default function RightFormPanel() {

@@ -1,6 +1,6 @@
 import axios from "axios";
 import { useGoogleLogin } from "@react-oauth/google";
-import authService from '../services/authService.js'
+import authService from '../../services/authService.js'
 
 export const useGoogleAuth = () => {
   console.log('Google Signup hit');
