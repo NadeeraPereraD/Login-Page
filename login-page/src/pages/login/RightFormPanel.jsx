@@ -7,10 +7,10 @@ import Button from "../../components/common/Button";
 import SocialLoginButton from "../../components/login/SocialLoginButton.jsx";
 import { FcGoogle } from "react-icons/fc";
 import { FaApple, FaFacebook } from "react-icons/fa";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import {
   useGoogleAuth,
-  handleFacebookLogin,
+  useFacebookAuth,
 } from "../../components/login/AuthLogin.js";
 import authService from "../../services/authService.js";
 
@@ -19,12 +19,24 @@ export default function RightFormPanel() {
     email: '',
     password: '',
   });
-  const handleGoogleLogin = useGoogleAuth();
+  const navigate = useNavigate();
+
+  const handleSocialLoginSuccess = (data) => {
+    navigate('/dashboard');
+  };
+
+  const handleGoogleLogin = useGoogleAuth(handleSocialLoginSuccess);
+  const handleFacebookLogin = useFacebookAuth(handleSocialLoginSuccess);
+  
+  // const handleFacebookLogin = () => {
+  //   const fbLogin = useFacebookAuth(handleSocialLoginSuccess);
+  //   fbLogin(); // Call the returned function
+  // };
 
   const socials = [
     { name: "Google", icon: FcGoogle, color: "", onClick: handleGoogleLogin, },
     // { name: "Apple", icon: FaApple, color: "#000000", onClick: () => console.log("Apple clicked"), },
-    { name: "Facebook", icon: FaFacebook, color: "#1877F2", onClick: () => handleFacebookLogin(), },
+    { name: "Facebook", icon: FaFacebook, color: "#1877F2", onClick: handleFacebookLogin, },
   ];
   const loginForm = [
     {
@@ -51,14 +63,28 @@ export default function RightFormPanel() {
     console.log("Email:", formData.email);
     console.log("Password:", formData.password);
     try {
-      const data = authService.login(formData);
+      const data = await authService.login(formData);
 
       console.log("Login success:", data);
+      console.log("Token:", data.token);
+      console.log("User:", data.user);
 
-      localStorage.setItem("token", data.token);
-      localStorage.setItem("user", JSON.stringify(data.user));
+      if (data && data.token && data.user) {
+        localStorage.setItem("token", data.token);
+        localStorage.setItem("user", JSON.stringify(data.user));
 
-      alert("Login successful!");
+        console.log("Stored token:", localStorage.getItem("token"));
+        console.log("Stored user:", localStorage.getItem("user"));
+
+        alert("Login successful!");
+        
+        setTimeout(() => {
+          navigate('/dashboard');
+        }, 100);
+      } else {
+        console.error("Invalid data structure:", data);
+        throw new Error('Invalid response from server');
+      }     
     } catch (err) {
       if (err.response) {
         alert(err.response?.data?.error || 'Login failed. Please try again.');

@@ -5,10 +5,10 @@ import Button from "../../components/common/Button";
 import SocialLoginButton from "../../components/login/SocialLoginButton";
 import { FcGoogle } from "react-icons/fc";
 import { FaApple, FaFacebook } from "react-icons/fa";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import validation from "../../components/login/Validations";
 import axios from "axios";
-import { useGoogleAuth, handleFacebookLogin } from "../../components/login/AuthLogin.js";
+import { useGoogleAuth, useFacebookAuth  } from "../../components/login/AuthLogin.js";
 import authService from "../../services/authService.js";
 
 export default function SignUp() {
@@ -24,7 +24,14 @@ export default function SignUp() {
     email: '',
     password: '',
   });
-  const handleGoogleLogin = useGoogleAuth();
+  const navigate = useNavigate();
+
+  const handleSocialLoginSuccess = (data) => {
+    navigate('/dashboard');
+  };
+
+  const handleGoogleLogin = useGoogleAuth(handleSocialLoginSuccess);
+  const handleFacebookLogin = useFacebookAuth(handleSocialLoginSuccess);
 
   const socials = [
     {
@@ -43,7 +50,7 @@ export default function SignUp() {
       name: "Facebook",
       icon: FaFacebook,
       color: "#1877F2",
-      onClick: () => handleFacebookLogin(),
+      onClick: handleFacebookLogin,
     },
   ];
 
@@ -91,6 +98,7 @@ export default function SignUp() {
     try {
       const data = await authService.register(formData);
       console.log("User registered successfully:", data);
+      navigate('/dashboard');
     } catch (err) {
       if (err.response) {
         alert(err.response.data.error || "User registration failed");

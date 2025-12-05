@@ -2,6 +2,8 @@ import { Disclosure, DisclosureButton, DisclosurePanel, Menu, MenuButton, MenuIt
 import { Bars3Icon, BellIcon, XMarkIcon } from '@heroicons/react/24/outline'
 import React from 'react'
 import Logo from './Logo'
+import { useNavigate } from 'react-router-dom'
+import authService from '../../services/authService'
 
 const navigation = [
   { name: 'Dashboard', href: '#', current: true },
@@ -15,6 +17,19 @@ function classNames(...classes) {
 }
 
 export default function Navbar() {
+  const navigate = useNavigate();
+  const user = authService.getCurrentUser();
+
+  const handleLogout = () => {
+    authService.logout();
+    navigate('/');
+  };
+
+  const getUserInitials = () => {
+    if (!user) return '?';
+    return `${user.firstName?.[0] || ''}${user.lastName?.[0] || ''}`.toUpperCase();
+  };
+
   return (
     <Disclosure as="nav" className="relative bg-white">
       <div className="mx-auto max-w-7xl px-2 sm:px-6 lg:px-8 bg-gray-800">
@@ -98,12 +113,12 @@ export default function Navbar() {
                   </a>
                 </MenuItem>
                 <MenuItem>
-                  <a
-                    href="#"
-                    className="block px-4 py-2 text-sm text-gray-700 data-focus:bg-gray-100 data-focus:outline-hidden"
+                  <button
+                    onClick={handleLogout}
+                    className="block w-full text-left px-4 py-2 text-sm text-red-600 data-focus:bg-gray-100 data-focus:outline-hidden"
                   >
                     Sign out
-                  </a>
+                  </button>
                 </MenuItem>
               </MenuItems>
             </Menu>

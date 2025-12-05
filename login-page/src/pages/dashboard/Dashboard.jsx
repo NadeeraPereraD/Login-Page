@@ -1,8 +1,35 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
 import Navbar from "../../components/common/Navbar";
 import image from "../../assets/dashboard4.jpg"
+import { useNavigate } from "react-router-dom";
+import authService from "../../services/authService";
 
 export default function Dashboard() {
+  const [user, setUser] = useState(null);
+  const navigate = useNavigate();
+
+  useEffect(() => {
+    if (!authService.isAuthenticated()) {
+      navigate('/');
+      return;
+    }
+    const userData = authService.getCurrentUser();
+    setUser(userData);
+  }, [navigate]);
+
+  const handleLogout = () => {
+    authService.logout();
+    navigate('/');
+  };
+
+  if (!user) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-gray-900">
+        <div className="text-white">Loading...</div>
+      </div>
+    );
+  }
+
   const imageUrl = image;
   return (
     <div className="min-h-screen flex flex-col bg-white">

@@ -1,9 +1,12 @@
 import axios from "axios";
 import { useGoogleLogin } from "@react-oauth/google";
 import authService from '../../services/authService.js'
+import { useNavigate } from "react-router-dom";
 
-export const useGoogleAuth = () => {
+//const navigate = useNavigate();
+export const useGoogleAuth = (onSuccess) => {
   console.log('Google Signup hit');
+  //const navigate = useNavigate();
   const handleGoogleLogin = useGoogleLogin({
     flow: "auth-code",
     onSuccess: async (tokenResponse) => {
@@ -25,6 +28,10 @@ export const useGoogleAuth = () => {
         } else {
           alert(`Welcome back ${data.user.firstName}!`);
         }
+        if (onSuccess) {
+          onSuccess(data);
+        }
+        //navigate('/dashboard');
       } catch (err) {
         console.error("Google auth failed:", err);
         alert("Google authentication failed. Please try again.");
@@ -39,70 +46,84 @@ export const useGoogleAuth = () => {
   return handleGoogleLogin;
 };
 
-export const handleFacebookLogin = () => {
-  const appId = import.meta.env.VITE_FACEBOOK_APP_ID;
-  const redirectUri = import.meta.env.VITE_REDIRECT_URI;
+export const useFacebookAuth  = (onSuccess) => {
+  const navigate = useNavigate();
+  const handleFacebookLogin = () => {
+    const appId = import.meta.env.VITE_FACEBOOK_APP_ID;
+    const redirectUri = import.meta.env.VITE_REDIRECT_URI;
+    
+    const fbAuthUrl = `https://www.facebook.com/v17.0/dialog/oauth?client_id=${appId}&redirect_uri=${redirectUri}&scope=email,public_profile&response_type=token`;
 
-  const fbAuthUrl = `https://www.facebook.com/v17.0/dialog/oauth?client_id=${appId}&redirect_uri=${redirectUri}&scope=email,public_profile&response_type=token`;
+    const width = 600,
+      height = 600;
+    const left = window.innerWidth / 2 - width / 2;
+    const top = window.innerHeight / 2 - height / 2;
 
-  const width = 600,
-    height = 600;
-  const left = window.innerWidth / 2 - width / 2;
-  const top = window.innerHeight / 2 - height / 2;
+    const fbWindow = window.open(
+      fbAuthUrl,
+      "Facebook Login",
+      `width=${width},height=${height},top=${top},left=${left}`
+    );
 
-  const fbWindow = window.open(
-    fbAuthUrl,
-    "Facebook Login",
-    `width=${width},height=${height},top=${top},left=${left}`
-  );
+    if (!fbWindow) {
+      alert("Please allow popups for this site");
+      return;
+    }
 
-  const fbCheck = setInterval(() => {
-    try {
-      if (!fbWindow || fbWindow.closed) {
-        clearInterval(fbCheck);
-        console.log("FB window closed by user");
-      } else if (fbWindow.location.href.includes(redirectUri)) {
-        const params = new URL(fbWindow.location.href).hash
-          .substring(1)
-          .split("&")
-          .reduce((acc, cur) => {
-            const [k, v] = cur.split("=");
-            acc[k] = v;
-            return acc;
-          }, {});
-
-        const accessToken = params.access_token;
-        if (!accessToken) {
-          console.error("No access token received");
+    const fbCheck = setInterval(() => {
+      try {
+        if (!fbWindow || fbWindow.closed) {
           clearInterval(fbCheck);
+          console.log("FB window closed by user");
+        } else if (fbWindow.location.href.includes(redirectUri)) {
+          const params = new URL(fbWindow.location.href).hash
+            .substring(1)
+            .split("&")
+            .reduce((acc, cur) => {
+              const [k, v] = cur.split("=");
+              acc[k] = v;
+              return acc;
+            }, {});
+
+          const accessToken = params.access_token;
+          if (!accessToken) {
+            console.error("No access token received");
+            clearInterval(fbCheck);
+            fbWindow.close();
+            //setLoading(false);
+            return;
+          }
+
+          console.log("Facebook access token received");
           fbWindow.close();
-          setLoading(false);
-          return;
+          clearInterval(fbCheck);
+
+          // Send accessToken to backend
+          authService.facebookAuth(accessToken)
+            .then((data) => {
+              console.log(data.msg);
+              localStorage.setItem("token", data.token);
+              localStorage.setItem("user", JSON.stringify(data.user));
+              if (data.isNewUser) {
+                alert(
+                  `Welcome ${data.user.firstName}! Account created successfully.`
+                );
+              } else {
+                alert(`Welcome back ${data.user.firstName}!`);
+              }
+
+              if (onSuccess) {
+                onSuccess(data);
+              }
+              //navigate('/dashboard');
+            })
+            .catch((err) => {
+              console.error("FB auth failed:", err);
+              alert("Facebook authentication failed. Please try again.");
+            });
         }
-
-        console.log("Facebook access token received");
-        fbWindow.close();
-        clearInterval(fbCheck);
-
-        // Send accessToken to backend
-        authService.facebookAuth(accessToken)
-          .then((data) => {
-            console.log(data.msg);
-            localStorage.setItem("token", data.token);
-            localStorage.setItem("user", JSON.stringify(data.user));
-            if (data.isNewUser) {
-              alert(
-                `Welcome ${data.user.firstName}! Account created successfully.`
-              );
-            } else {
-              alert(`Welcome back ${data.user.firstName}!`);
-            }
-          })
-          .catch((err) => {
-            console.error("FB auth failed:", err);
-            alert("Facebook authentication failed. Please try again.");
-          });
-      }
-    } catch (err) {}
-  }, 500);
+      } catch (err) {}
+    }, 500);
+  }
+  return handleFacebookLogin;
 };

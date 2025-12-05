@@ -18,11 +18,11 @@ function App() {
     <BrowserRouter>
       <div className='bg-[#686279] h-screen'>
        <Routes>
-        {/* <Route path='/' element={<Login/>}> */}
-        <Route path='/' element={<Dashboard/>}>
+        <Route path='/' element={<Login/>}>
           <Route index element={<RightFormPanel />} />
           <Route path='/signup' element={<SignUp/>}/>
         </Route>
+        <Route path='/dashboard' element={<Dashboard/>}/>
        </Routes>
       </div>
     </BrowserRouter>
